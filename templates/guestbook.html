@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+{% block title %}방명록{% endblock %}
+
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p class="page-label">Guestbook</p>
+    <h1 class="page-title">방명록</h1>
+    <p class="page-subtitle">찾아주셔서 감사합니다. 짧은 한 마디를 남겨주세요.</p>
+  </div>
+</div>
+
+<section class="section-guestbook">
+  <div class="container narrow">
+
+    <!-- 작성 폼 -->
+    <div class="guestbook-form-wrap">
+      <h2 class="form-title">글 남기기</h2>
+      <form action="{{ url_for('guestbook_write') }}" method="post" class="guestbook-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nickname">이름 (닉네임)</label>
+            <input type="text" id="nickname" name="nickname" placeholder="이름을 입력하세요" maxlength="20" required>
+          </div>
+          <div class="form-group">
+            <label for="password">비밀번호 <small>(수정/삭제 시 필요)</small></label>
+            <input type="password" id="password" name="password" placeholder="비밀번호" maxlength="20" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="content">내용 <small id="char-count">0 / 500</small></label>
+          <textarea id="content" name="content" rows="4" placeholder="하고 싶은 말을 남겨주세요." maxlength="500" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">등록하기</button>
+      </form>
+    </div>
+
+    <!-- 목록 -->
+    <div class="guestbook-list">
+      <div class="gb-list-header">
+        <span>총 <strong>{{ total }}</strong>개의 방명록</span>
+      </div>
+
+      {% if entries %}
+        {% for entry in entries %}
+        <div class="gb-entry" id="entry-{{ entry.id }}">
+          <div class="gb-entry-header">
+            <span class="gb-nickname">{{ entry.nickname }}</span>
+            <span class="gb-date">{{ entry.created_at[:16] }}
+              {% if entry.updated_at %}
+              <span class="gb-edited">(수정됨)</span>
+              {% endif %}
+            </span>
+            <div class="gb-actions">
+              <button class="gb-btn" onclick="openEdit({{ entry.id }})">수정</button>
+              <button class="gb-btn danger" onclick="openDelete({{ entry.id }})">삭제</button>
+            </div>
+          </div>
+          <p class="gb-content" id="content-{{ entry.id }}">{{ entry.content }}</p>
+
+          <!-- 수정 폼 (숨김) -->
+          <div class="gb-edit-form" id="edit-{{ entry.id }}" style="display:none">
+            <textarea class="gb-edit-textarea" id="edit-text-{{ entry.id }}" rows="3">{{ entry.content }}</textarea>
+            <div class="gb-edit-row">
+              <input type="password" class="gb-edit-pw" id="edit-pw-{{ entry.id }}" placeholder="비밀번호">
+              <button class="btn-sm" onclick="submitEdit({{ entry.id }})">저장</button>
+              <button class="btn-sm outline" onclick="closeEdit({{ entry.id }})">취소</button>
+            </div>
+          </div>
+
+          <!-- 삭제 폼 (숨김) -->
+          <div class="gb-delete-form" id="delete-{{ entry.id }}" style="display:none">
+            <div class="gb-delete-row">
+              <input type="password" class="gb-edit-pw" id="delete-pw-{{ entry.id }}" placeholder="비밀번호">
+              <button class="btn-sm danger" onclick="submitDelete({{ entry.id }})">삭제 확인</button>
+              <button class="btn-sm outline" onclick="closeDelete({{ entry.id }})">취소</button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <p>아직 방명록이 없습니다. 첫 번째로 글을 남겨주세요!</p>
+        </div>
+      {% endif %}
+
+      <!-- 페이지네이션 -->
+      {% if total_pages > 1 %}
+      <div class="pagination">
+        {% for p in range(1, total_pages + 1) %}
+        <a href="{{ url_for('guestbook', page=p) }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 글자 수 카운트
+const textarea = document.getElementById('content');
+const charCount = document.getElementById('char-count');
+if (textarea) {
+  textarea.addEventListener('input', () => {
+    charCount.textContent = `${textarea.value.length} / 500`;
+  });
+}
+
+function openEdit(id) {
+  document.getElementById(`edit-${id}`).style.display = 'block';
+  document.getElementById(`delete-${id}`).style.display = 'none';
+}
+function closeEdit(id) {
+  document.getElementById(`edit-${id}`).style.display = 'none';
+}
+function openDelete(id) {
+  document.getElementById(`delete-${id}`).style.display = 'block';
+  document.getElementById(`edit-${id}`).style.display = 'none';
+}
+function closeDelete(id) {
+  document.getElementById(`delete-${id}`).style.display = 'none';
+}
+
+async function submitEdit(id) {
+  const content = document.getElementById(`edit-text-${id}`).value.trim();
+  const password = document.getElementById(`edit-pw-${id}`).value;
+  if (!content || !password) { alert('내용과 비밀번호를 입력해주세요.'); return; }
+
+  const fd = new FormData();
+  fd.append('content', content);
+  fd.append('password', password);
+
+  const res = await fetch(`/guestbook/edit/${id}`, { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    document.getElementById(`content-${id}`).textContent = data.content;
+    closeEdit(id);
+  } else {
+    alert(data.message);
+  }
+}
+
+async function submitDelete(id) {
+  const password = document.getElementById(`delete-pw-${id}`).value;
+  if (!password) { alert('비밀번호를 입력해주세요.'); return; }
+
+  const fd = new FormData();
+  fd.append('password', password);
+
+  const res = await fetch(`/guestbook/delete/${id}`, { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    const el = document.getElementById(`entry-${id}`);
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  } else {
+    alert(data.message);
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}오류가 발생했습니다{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-num">500</div>
+  <h1 class="error-title">서버 오류가 발생했습니다</h1>
+  <p class="error-sub">잠시 후 다시 시도해 주세요.</p>
+  <a href="{{ url_for('index') }}" class="btn-primary">홈으로 돌아가기</a>
+</div>
+{% endblock %}

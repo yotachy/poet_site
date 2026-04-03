@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% block title %}{% endblock %}
+
+{% block content %}
+
+<!-- ── 히어로 ─────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-photo-wrap">
+      {% if profile.photo %}
+        <img src="{{ url_for('static', filename='uploads/' + profile.photo) }}" alt="{{ profile.name }}" class="hero-photo">
+      {% else %}
+        <div class="hero-photo-placeholder">
+          <span>詩</span>
+        </div>
+      {% endif %}
+    </div>
+    <div class="hero-text">
+      <p class="hero-label">시인</p>
+      <h1 class="hero-name">{{ profile.name }}</h1>
+      <p class="hero-tagline">{{ profile.tagline }}</p>
+      <div class="hero-divider"></div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">{{ collections|length }}</span>
+          <span class="stat-label">시집</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-num">
+            {{ histories|selectattr('category', 'equalto', 'award')|list|length }}
+          </span>
+          <span class="stat-label">수상</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-num">
+            {{ (histories|first).year[:4] if histories else '2005' }}
+          </span>
+          <span class="stat-label">등단</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>↓</span>
+  </div>
+</section>
+
+<!-- ── 대표 시 ─────────────────────────────── -->
+{% if recent_poems %}
+<section class="section-poems section-alt">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Recent Poems</p>
+      <h2 class="section-title">최근 시</h2>
+    </div>
+    <div class="poem-cards">
+      {% for poem in recent_poems %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="poem-card">
+        <div class="poem-card-num">0{{ loop.index }}</div>
+        <h3 class="poem-card-title">{{ poem.title }}</h3>
+        <p class="poem-card-preview">{{ poem.content[:60] }}…</p>
+        {% if poem.note %}
+        <span class="poem-card-note">{{ poem.note }}</span>
+        {% endif %}
+        <span class="poem-card-arrow">→</span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="section-more">
+      <a href="{{ url_for('poems') }}" class="btn-text">모든 시 보기 →</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── 시집 ──────────────────────────────── -->
+{% if collections %}
+<section class="section-collections">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Collections</p>
+      <h2 class="section-title">시집</h2>
+    </div>
+    <div class="collection-list">
+      {% for col in collections %}
+      <div class="collection-item">
+        <div class="col-cover">
+          {% if col.cover_image %}
+            <img src="{{ url_for('static', filename='uploads/' + col.cover_image) }}" alt="{{ col.title }}">
+          {% else %}
+            <div class="col-cover-placeholder">
+              <span class="col-num">{{ loop.index }}</span>
+            </div>
+          {% endif %}
+        </div>
+        <div class="col-info">
+          <p class="col-year">{{ col.year }}</p>
+          <h3 class="col-title">{{ col.title }}</h3>
+          {% if col.subtitle %}<p class="col-subtitle">{{ col.subtitle }}</p>{% endif %}
+          <p class="col-publisher">{{ col.publisher }}</p>
+          <p class="col-desc">{{ col.description }}</p>
+          <a href="{{ url_for('poems', collection=col.id) }}" class="btn-text sm">수록 시 보기 →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── 연혁 미리보기 ──────────────────────── -->
+<section class="section-history section-alt">
+  <div class="container narrow">
+    <div class="section-header">
+      <p class="section-label">Biography</p>
+      <h2 class="section-title">연혁</h2>
+    </div>
+    <div class="timeline">
+      {% for h in histories %}
+      <div class="timeline-item {{ h.category }}">
+        <span class="timeline-year">{{ h.year }}</span>
+        <span class="timeline-dot"></span>
+        <p class="timeline-content">{{ h.content }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="section-more">
+      <a href="{{ url_for('works') }}" class="btn-text">전체 약력 보기 →</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

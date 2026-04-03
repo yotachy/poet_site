@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}{{ poem.title }}{% endblock %}
+
+{% block content %}
+
+<div class="poem-detail-wrap">
+  <div class="poem-detail-header">
+    <a href="{{ url_for('poems') }}" class="back-link">← 목록으로</a>
+    {% if poem.col_title %}
+    <span class="poem-collection-tag">{{ poem.col_title }}</span>
+    {% endif %}
+  </div>
+
+  <article class="poem-detail">
+    <h1 class="poem-detail-title">{{ poem.title }}</h1>
+    {% if poem.note %}
+    <p class="poem-detail-note">{{ poem.note }}</p>
+    {% endif %}
+    <div class="poem-detail-divider"></div>
+    <div class="poem-body">
+      {% for line in poem.content.split('\n') %}
+        {% if line.strip() %}
+          <p>{{ line }}</p>
+        {% else %}
+          <br>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </article>
+
+  <!-- 이전/다음 -->
+  <nav class="poem-nav">
+    <div class="poem-nav-prev">
+      {% if prev_poem %}
+      <a href="{{ url_for('poem_detail', poem_id=prev_poem.id) }}">
+        <span class="nav-dir">← 이전 시</span>
+        <span class="nav-title">{{ prev_poem.title }}</span>
+      </a>
+      {% endif %}
+    </div>
+    <div class="poem-nav-next">
+      {% if next_poem %}
+      <a href="{{ url_for('poem_detail', poem_id=next_poem.id) }}">
+        <span class="nav-dir">다음 시 →</span>
+        <span class="nav-title">{{ next_poem.title }}</span>
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+</div>
+
+{% endblock %}

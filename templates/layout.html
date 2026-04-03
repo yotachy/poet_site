@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %}{% if self.title() %} — {% endif %}{{ profile.name if profile else '시인의 공간' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;400;500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ── 헤더 ─────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{{ url_for('index') }}" class="site-logo">
+        <span class="logo-kr">{{ profile.name if profile else '시인' }}</span>
+        <span class="logo-en">Poet</span>
+      </a>
+      <nav class="main-nav" id="main-nav">
+        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">홈</a>
+        <a href="{{ url_for('works') }}" class="nav-link {% if request.endpoint == 'works' %}active{% endif %}">작품</a>
+        <a href="{{ url_for('poems') }}" class="nav-link {% if request.endpoint in ['poems','poem_detail'] %}active{% endif %}">시</a>
+        <a href="{{ url_for('guestbook') }}" class="nav-link {% if request.endpoint == 'guestbook' %}active{% endif %}">방명록</a>
+        {% if session.get('admin') %}
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link nav-admin">관리</a>
+        {% endif %}
+      </nav>
+      <div class="header-right">
+        <button class="search-toggle" id="searchToggle" aria-label="검색">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <!-- 검색창 (접힘/펼침) -->
+    <div class="header-search" id="headerSearch" style="display:none">
+      <form action="{{ url_for('search') }}" method="get" class="header-search-form">
+        <input type="text" name="q" placeholder="시 제목 또는 내용으로 검색..."
+               value="{{ request.args.get('q', '') }}" autofocus>
+        <button type="submit">검색</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- ── 플래시 메시지 ──────────────────────── -->
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for msg in messages %}
+    <div class="flash-msg">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ── 콘텐츠 ─────────────────────────────── -->
+  <main class="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── 푸터 ─────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-name">{{ profile.name if profile else '시인의 공간' }}</p>
+          <p class="footer-tagline">{{ profile.tagline if profile and profile.tagline else '' }}</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="{{ url_for('index') }}">홈</a>
+          <a href="{{ url_for('works') }}">작품</a>
+          <a href="{{ url_for('poems') }}">시</a>
+          <a href="{{ url_for('guestbook') }}">방명록</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">© {{ now.year }} {{ profile.name if profile else '' }}. All rights reserved.</p>
+        <a href="{{ url_for('admin_login') }}" class="footer-admin-link">관리자</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

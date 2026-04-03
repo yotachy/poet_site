@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block title %}{{ '시 수정' if poem else '새 시 등록' }}{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-sidebar">
+    <h2 class="admin-sidebar-title">관리자</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-link">대시보드</a>
+      <a href="{{ url_for('admin_profile') }}" class="admin-nav-link">프로필 관리</a>
+      <a href="{{ url_for('admin_history') }}" class="admin-nav-link">연혁 관리</a>
+      <a href="{{ url_for('admin_collections') }}" class="admin-nav-link">시집 관리</a>
+      <a href="{{ url_for('admin_poems') }}" class="admin-nav-link active">시 관리</a>
+      <a href="{{ url_for('admin_logout') }}" class="admin-nav-link logout">로그아웃</a>
+    </nav>
+  </div>
+  <div class="admin-content">
+    <h1 class="admin-title">{{ '시 수정' if poem else '새 시 등록' }}</h1>
+
+    <form method="post" class="admin-form">
+      <div class="form-group">
+        <label>제목 *</label>
+        <input type="text" name="title" value="{{ poem.title if poem else '' }}" placeholder="시 제목" required>
+      </div>
+      <div class="form-group">
+        <label>내용 *</label>
+        <textarea name="content" rows="15" placeholder="시 내용을 입력하세요..." required>{{ poem.content if poem else '' }}</textarea>
+        <small>줄 바꿈은 그대로 표시됩니다. 빈 줄을 넣으면 연(聯) 구분이 됩니다.</small>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>시집</label>
+          <select name="collection_id">
+            <option value="">— 시집 선택 —</option>
+            {% for col in collections %}
+            <option value="{{ col.id }}" {% if poem and poem.collection_id == col.id %}selected{% endif %}>
+              {{ col.title }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>공개 여부</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="is_public" value="1" {% if not poem or poem.is_public %}checked{% endif %}> 공개
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="is_public" value="0" {% if poem and not poem.is_public %}checked{% endif %}> 비공개
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>메모 / 출처</label>
+        <input type="text" name="note" value="{{ poem.note if poem else '' }}" placeholder="예: 《시집 이름》 수록">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">{{ '수정하기' if poem else '등록하기' }}</button>
+        <a href="{{ url_for('admin_poems') }}" class="btn-outline">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

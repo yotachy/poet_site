@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block title %}시{% endblock %}
+
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p class="page-label">Poems</p>
+    <h1 class="page-title">시</h1>
+  </div>
+</div>
+
+<section class="section-poems-list">
+  <div class="container">
+
+    <!-- 필터 -->
+    <div class="filter-bar">
+      <a href="{{ url_for('poems') }}" class="filter-btn {% if not selected_collection %}active{% endif %}">전체</a>
+      {% for col in collections %}
+      <a href="{{ url_for('poems', collection=col.id) }}" class="filter-btn {% if selected_collection == col.id %}active{% endif %}">
+        {{ col.title }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- 시 목록 -->
+    {% if poems %}
+    <div class="poems-grid">
+      {% for poem in poems %}
+      <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="poem-card-lg">
+        <div class="poem-card-top">
+          {% if poem.col_title %}
+          <span class="poem-collection-tag">{{ poem.col_title }}</span>
+          {% endif %}
+          <span class="poem-date">{{ poem.created_at[:10] }}</span>
+        </div>
+        <h3 class="poem-title">{{ poem.title }}</h3>
+        <p class="poem-preview">{{ poem.content[:80] }}{% if poem.content|length > 80 %}…{% endif %}</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>등록된 시가 없습니다.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

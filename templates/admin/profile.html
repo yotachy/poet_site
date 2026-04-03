@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block title %}프로필 관리{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-sidebar">
+    <h2 class="admin-sidebar-title">관리자</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-link">대시보드</a>
+      <a href="{{ url_for('admin_profile') }}" class="admin-nav-link active">프로필 관리</a>
+      <a href="{{ url_for('admin_history') }}" class="admin-nav-link">연혁 관리</a>
+      <a href="{{ url_for('admin_collections') }}" class="admin-nav-link">시집 관리</a>
+      <a href="{{ url_for('admin_poems') }}" class="admin-nav-link">시 관리</a>
+      <a href="{{ url_for('admin_logout') }}" class="admin-nav-link logout">로그아웃</a>
+    </nav>
+  </div>
+  <div class="admin-content">
+    <h1 class="admin-title">프로필 관리</h1>
+    <form method="post" enctype="multipart/form-data" class="admin-form">
+      <input type="hidden" name="current_photo" value="{{ profile.photo or '' }}">
+      <div class="form-group">
+        <label>이름 *</label>
+        <input type="text" name="name" value="{{ profile.name }}" required>
+      </div>
+      <div class="form-group">
+        <label>출생 연도</label>
+        <input type="text" name="birth_year" value="{{ profile.birth_year or '' }}" placeholder="1980">
+      </div>
+      <div class="form-group">
+        <label>소개 한 줄</label>
+        <input type="text" name="tagline" value="{{ profile.tagline or '' }}" placeholder="짧은 소개 문구">
+      </div>
+      <div class="form-group">
+        <label>약력</label>
+        <textarea name="bio" rows="8" placeholder="약력을 입력하세요. 빈 줄로 단락을 구분합니다.">{{ profile.bio or '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>프로필 사진</label>
+        {% if profile.photo %}
+        <img src="{{ url_for('static', filename='uploads/' + profile.photo) }}" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin-bottom:8px;display:block;">
+        {% endif %}
+        <input type="file" name="photo" accept="image/*">
+        <small>JPG, PNG, WEBP 지원 (최대 16MB)</small>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">저장하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

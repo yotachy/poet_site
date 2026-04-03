@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% block title %}시집 관리{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-sidebar">
+    <h2 class="admin-sidebar-title">관리자</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-link">대시보드</a>
+      <a href="{{ url_for('admin_profile') }}" class="admin-nav-link">프로필 관리</a>
+      <a href="{{ url_for('admin_history') }}" class="admin-nav-link">연혁 관리</a>
+      <a href="{{ url_for('admin_collections') }}" class="admin-nav-link active">시집 관리</a>
+      <a href="{{ url_for('admin_poems') }}" class="admin-nav-link">시 관리</a>
+      <a href="{{ url_for('admin_logout') }}" class="admin-nav-link logout">로그아웃</a>
+    </nav>
+  </div>
+  <div class="admin-content">
+    <h1 class="admin-title">시집 관리</h1>
+
+    <!-- 추가 폼 -->
+    <div class="admin-form-card">
+      <h3>새 시집 추가</h3>
+      <form method="post" action="{{ url_for('admin_collection_add') }}" enctype="multipart/form-data" class="admin-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>시집 제목 *</label>
+            <input type="text" name="title" placeholder="시집 이름" required>
+          </div>
+          <div class="form-group">
+            <label>출판사</label>
+            <input type="text" name="publisher" placeholder="문학과지성사">
+          </div>
+          <div class="form-group">
+            <label>출판 연도</label>
+            <input type="text" name="year" placeholder="2024">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>소개글</label>
+          <textarea name="description" rows="3" placeholder="시집 소개를 입력하세요"></textarea>
+        </div>
+        <div class="form-group">
+          <label>표지 이미지</label>
+          <input type="file" name="cover_image" accept="image/*">
+          <small>JPG, PNG, WEBP 권장. 세로형(3:4 비율)이 잘 어울립니다.</small>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">추가하기</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 시집 목록 -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>표지</th><th>제목</th><th>출판사</th><th>연도</th><th>삭제</th></tr>
+        </thead>
+        <tbody>
+          {% for col in collections %}
+          <tr id="col-row-{{ col.id }}">
+            <td>
+              {% if col.cover_image %}
+                <img src="{{ url_for('static', filename='uploads/' + col.cover_image) }}"
+                     style="width:40px;height:52px;object-fit:cover;border-radius:2px;">
+              {% else %}
+                <div style="width:40px;height:52px;background:var(--bg-alt);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);">없음</div>
+              {% endif %}
+            </td>
+            <td>{{ col.title }}</td>
+            <td>{{ col.publisher or '—' }}</td>
+            <td>{{ col.year or '—' }}</td>
+            <td>
+              <button class="btn-sm danger" onclick="deleteCol({{ col.id }})">삭제</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function deleteCol(id) {
+  if (!confirm('시집을 삭제하시겠습니까?\n(연결된 시의 시집 정보가 초기화됩니다)')) return;
+  const res = await fetch(`/admin/collection/${id}/delete`, { method: 'POST' });
+  const data = await res.json();
+  if (data.success) document.getElementById(`col-row-${id}`).remove();
+}
+</script>
+{% endblock %}

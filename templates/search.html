@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}검색{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <p class="page-label">Search</p>
+    <h1 class="page-title">검색</h1>
+  </div>
+</div>
+<section class="section-poems-list">
+  <div class="container">
+    <form action="{{ url_for('search') }}" method="get" class="search-form">
+      <div class="search-input-wrap">
+        <input type="text" name="q" value="{{ q }}" placeholder="시 제목 또는 내용으로 검색..." autofocus>
+        <button type="submit" class="search-btn">검색</button>
+      </div>
+    </form>
+    {% if q %}
+      <p class="search-result-label">
+        <strong>{{ q }}</strong> 검색 결과 — {{ results|length }}편
+      </p>
+      {% if results %}
+      <div class="poems-grid">
+        {% for poem in results %}
+        <a href="{{ url_for('poem_detail', poem_id=poem.id) }}" class="poem-card-lg">
+          <h3 class="poem-title">{{ poem.title }}</h3>
+          <p class="poem-preview">{{ poem.content[:100] }}…</p>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>검색 결과가 없습니다.</p>
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

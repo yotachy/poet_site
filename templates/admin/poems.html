@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block title %}시 관리{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-sidebar">
+    <h2 class="admin-sidebar-title">관리자</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-link">대시보드</a>
+      <a href="{{ url_for('admin_profile') }}" class="admin-nav-link">프로필 관리</a>
+      <a href="{{ url_for('admin_history') }}" class="admin-nav-link">연혁 관리</a>
+      <a href="{{ url_for('admin_collections') }}" class="admin-nav-link">시집 관리</a>
+      <a href="{{ url_for('admin_poems') }}" class="admin-nav-link active">시 관리</a>
+      <a href="{{ url_for('admin_logout') }}" class="admin-nav-link logout">로그아웃</a>
+    </nav>
+  </div>
+  <div class="admin-content">
+    <div class="admin-header-row">
+      <h1 class="admin-title">시 관리</h1>
+      <a href="{{ url_for('admin_poem_new') }}" class="btn-primary">+ 새 시 등록</a>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>제목</th>
+            <th>시집</th>
+            <th>공개 여부</th>
+            <th>등록일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for poem in poems %}
+          <tr id="poem-row-{{ poem.id }}">
+            <td><a href="{{ url_for('poem_detail', poem_id=poem.id) }}" target="_blank">{{ poem.title }}</a></td>
+            <td>{{ poem.col_title or '—' }}</td>
+            <td>
+              <button class="toggle-btn {% if poem.is_public %}public{% else %}private{% endif %}"
+                      onclick="togglePublic({{ poem.id }}, this)">
+                {% if poem.is_public %}공개{% else %}비공개{% endif %}
+              </button>
+            </td>
+            <td>{{ poem.created_at[:10] }}</td>
+            <td class="action-cell">
+              <a href="{{ url_for('admin_poem_edit', poem_id=poem.id) }}" class="btn-sm">수정</a>
+              <form action="{{ url_for('admin_poem_delete', poem_id=poem.id) }}" method="post" style="display:inline"
+                    onsubmit="return confirm('정말 삭제하시겠습니까?')">
+                <button type="submit" class="btn-sm danger">삭제</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function togglePublic(id, btn) {
+  const fd = new FormData();
+  const res = await fetch(`/admin/poem/${id}/toggle`, { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    if (data.is_public) {
+      btn.textContent = '공개';
+      btn.className = 'toggle-btn public';
+    } else {
+      btn.textContent = '비공개';
+      btn.className = 'toggle-btn private';
+    }
+  }
+}
+</script>
+{% endblock %}

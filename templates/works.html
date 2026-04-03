@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+{% block title %}작품{% endblock %}
+
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p class="page-label">Works & Profile</p>
+    <h1 class="page-title">작품과 약력</h1>
+  </div>
+</div>
+
+<!-- 프로필 -->
+<section class="section-profile">
+  <div class="container">
+    <div class="profile-wrap">
+      <div class="profile-photo-wrap">
+        {% if profile.photo %}
+          <img src="{{ url_for('static', filename='uploads/' + profile.photo) }}" alt="{{ profile.name }}" class="profile-photo">
+        {% else %}
+          <div class="profile-photo-placeholder"><span>詩</span></div>
+        {% endif %}
+      </div>
+      <div class="profile-text">
+        <h2 class="profile-name">{{ profile.name }}</h2>
+        {% if profile.birth_year %}
+        <p class="profile-birth">{{ profile.birth_year }}년생</p>
+        {% endif %}
+        <p class="profile-tagline">{{ profile.tagline }}</p>
+        <div class="profile-bio">
+          {% for para in profile.bio.split('\n\n') %}
+          <p>{{ para }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 연혁 & 수상 -->
+<section class="section-history section-alt">
+  <div class="container narrow">
+    <div class="section-header">
+      <p class="section-label">History & Awards</p>
+      <h2 class="section-title">연혁 및 수상</h2>
+    </div>
+    <div class="history-tabs">
+      <button class="tab-btn active" data-tab="all">전체</button>
+      <button class="tab-btn" data-tab="history">연혁</button>
+      <button class="tab-btn" data-tab="award">수상</button>
+    </div>
+    <div class="timeline">
+      {% for h in histories %}
+      <div class="timeline-item {{ h.category }}" data-category="{{ h.category }}">
+        <span class="timeline-year">{{ h.year }}</span>
+        <span class="timeline-dot"></span>
+        <p class="timeline-content">
+          {% if h.category == 'award' %}<span class="award-badge">수상</span>{% endif %}
+          {{ h.content }}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 시집 -->
+<section class="section-collections">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Poetry Collections</p>
+      <h2 class="section-title">시집</h2>
+    </div>
+    <div class="collection-list">
+      {% for col in collections %}
+      <div class="collection-item">
+        <div class="col-cover">
+          {% if col.cover_image %}
+            <img src="{{ url_for('static', filename='uploads/' + col.cover_image) }}" alt="{{ col.title }}">
+          {% else %}
+            <div class="col-cover-placeholder">
+              <span class="col-num">{{ loop.index }}</span>
+            </div>
+          {% endif %}
+        </div>
+        <div class="col-info">
+          <p class="col-year">{{ col.year }}</p>
+          <h3 class="col-title">{{ col.title }}</h3>
+          {% if col.subtitle %}<p class="col-subtitle">{{ col.subtitle }}</p>{% endif %}
+          <p class="col-publisher">{{ col.publisher }}</p>
+          <p class="col-desc">{{ col.description }}</p>
+          <a href="{{ url_for('poems', collection=col.id) }}" class="btn-text sm">수록 시 보기 →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.timeline-item').forEach(item => {
+      if (tab === 'all' || item.dataset.category === tab) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
